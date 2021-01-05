@@ -7,11 +7,11 @@
 std::map<char, unsigned int> getFrequencyTable(std::string filename)
 {
 	std::map<char, unsigned int> frequencies;
-	std::ifstream myfile(filename);
+	std::ifstream i_file(filename);
 
-	if (myfile.is_open()) {
+	if (i_file.is_open()) {
 		char ch;
-		while (myfile.get(ch))
+		while (i_file.get(ch))
 		{
 			if (frequencies.find(ch) != frequencies.end())
 			{
@@ -24,7 +24,7 @@ std::map<char, unsigned int> getFrequencyTable(std::string filename)
 		}
 	}
 	else throw "File not found!";
-	myfile.close();
+	i_file.close();
 	return frequencies;
 }
 
@@ -183,21 +183,89 @@ void encrypt(const HuffTree* tree, std::string input, std::string output)
 	}
 	else throw "Input file was not found";
 	i_file.close();
+	o_file.close();
 
 
 }
 
 void compress(std::string input, std::string output)
 {
-	//these variables are for readability of code
 
+	unsigned int bit_count{ 0 };
 	auto frequencies = getFrequencyTable(input);
+
 	auto hufftree = getHuffmanTree(frequencies);
 
 	encrypt(hufftree, input, output);
+
+	std::ofstream info_file("info_for_decompression.txt");
+	for (auto it = frequencies.begin(); it != frequencies.end(); ++it)
+	{
+		info_file << it->first << '\n' << it->second << '\n';
+	}
 	delete hufftree;
 
 }
+
+
+
+std::map<char, unsigned int> readFrequencyTable()
+{
+	std::map<char, unsigned int> mp;
+	std::ifstream info_file("info_for_decompression.txt");
+
+	if (info_file.is_open())
+	{
+		std::string key;
+		std::string value;
+		while (std::getline(info_file, key) && std::getline(info_file, value))
+		{
+			mp[key[0]] = std::stoi(value);
+
+		}
+	}
+	else throw "The file containing info for decompression was not found!";
+	info_file.close();
+	return mp;
+
+}
+
+void decompress(std::string input, std::string output)
+{
+	auto frequencies = readFrequencyTable();
+	auto hufftree = getHuffmanTree(frequencies);
+	auto current_node = hufftree->getRoot();
+	std::ifstream i_file(input);
+	std::ofstream o_file(output);
+	if (i_file.is_open()) {
+		char ch;
+		while (i_file.get(ch))
+		{
+			
+			if (ch == '0') 
+			{ 
+				current_node = current_node->left; 
+			}
+			else
+			{
+				current_node = current_node->right;
+			}
+			if (current_node->isLeaf()) 
+			{
+				o_file << current_node->data;
+				current_node = hufftree->getRoot();
+			}
+		}
+	}
+	else throw "Input file not found!";
+	i_file.close();
+	o_file.close();
+
+
+}
+
+
+
 
 
 
@@ -206,5 +274,6 @@ void compress(std::string input, std::string output)
 int main()
 {
 	compress("input.txt", "output.txt");
+	decompress("output.txt", "decompression.txt");
 	return 0;
 }
