@@ -1,5 +1,5 @@
-//Terminal
-//$env:DEBUG=1; ./Huffman_Algorithm -d -i output.txt -o input.txt
+//Terminal examples
+//$env:DEBUG=1; ./Huffman_Algorithm -c -i input.txt -o output.txt
 //$env:DEBUG=0; ./Huffman_Algorithm -d -i output.txt -o input.txt
 
 #include <iostream>
@@ -94,7 +94,7 @@ public:
 
 
 //no divide & conquer, sorry :(
-std::map<char, unsigned int>::iterator bsmapLower_Bound(unsigned int value, std::map<char, unsigned int>& mp)
+std::map<char, unsigned int>::iterator mapLower_Bound(unsigned int value, std::map<char, unsigned int>& mp)
 {
 	//finds the element with the biggest frequency
 	auto max_it = mp.begin();
@@ -148,7 +148,7 @@ HuffTree* getHuffmanTree(std::map<char, unsigned int> frequencies)
 	//now we look for lower bound and then we tie
 	while (!frequencies.empty())
 	{
-		auto it = bsmapLower_Bound(min_frequency, frequencies);
+		auto it = mapLower_Bound(min_frequency, frequencies);
 		tree->tie(new HuffNode(it->first, it->second));
 		key_min_frequency = it->first;
 		min_frequency = it->second;
